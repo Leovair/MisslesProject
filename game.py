@@ -9,7 +9,17 @@ window.screensize(1200, 800)
 
 BASE_X = 0
 BASE_Y = -300
+ENEMY_BASE_X = 0
+ENEMY_BASE_Y = 500
 
+def calculate_enime(x1,y1,x2,y2):
+    dx = x2 - x1
+    dy = y2-y1
+    lenght = (dx ** 2 + dy ** 2)**0.5
+    cos_alpha = dx / lenght
+    alpha = math.acos(cos_alpha)
+    alpha = math.degrees(alpha)
+    return alpha
 
 def calculate_heading(x1, y1, x2, y2):
     dx = x2 - x1
@@ -22,6 +32,13 @@ def calculate_heading(x1, y1, x2, y2):
         alpha = -alpha
     return alpha
 
+def enemy_missle():
+    enemy  = turtle.Turtle()
+    enemy.color('red')
+    # enemy.hideturtle()
+    enemy.speed(1)
+    enemy.penup()
+    enemy.setpos(x=ENEMY_BASE_X,y=ENEMY_BASE_Y)
 
 def fire_missile(x, y):
     missile = turtle.Turtle(visible=False)
@@ -40,7 +57,7 @@ def fire_missile(x, y):
 
 window.onclick(fire_missile)
 our_missiles = []
-
+enemy_missle()
 # Gaming cicle, and use State pattern
 while True:
     window.update()
