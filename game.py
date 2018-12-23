@@ -1,6 +1,7 @@
 import random
 import turtle
 import math
+
 window = turtle.Screen()
 window.bgpic('images/background.png')
 window.setup(1200 + 10, 800 + 10)
@@ -8,6 +9,7 @@ window.screensize(1200, 800)
 
 BASE_X = 0
 BASE_Y = -300
+
 
 def calculate_heading(x1, y1, x2, y2):
     dx = x2 - x1
@@ -20,7 +22,8 @@ def calculate_heading(x1, y1, x2, y2):
         alpha = -alpha
     return alpha
 
-def fire_missile(x,y):
+
+def fire_missile(x, y):
     missile = turtle.Turtle(visible=False)
     missile.color('white')
     missile.hideturtle()
@@ -28,56 +31,42 @@ def fire_missile(x,y):
     missile.penup()
     missile.setpos(x=BASE_X, y=BASE_Y)
     missile.pendown()
-    heading = calculate_heading(x1=BASE_X, y1=BASE_Y, x2 =x ,y2=y)
+    heading = calculate_heading(x1=BASE_X, y1=BASE_Y, x2=x, y2=y)
     missile.setheading(heading)
     missile.showturtle()
+    info_about_rocket = {'missile': missile, 'target': [x, y], 'state': 'launched', 'radius': 0}
+    our_missiles.append(info_about_rocket)
 
-
-    our_missiles.append(missile)
-    our_missiles_target.append([x,y])
-    our_missiles_state.append('launched')
-    our_missiles_radius.append(0)
-    # missile.forward(500)
-    # missile.shape('circle')
-    # missile.shapesize(2)
-    # missile.shapesize(3)
-    # missile.shapesize(4)
-    # missile.clear()
-    # missile.hideturtle()
-
-# def airplane(y):
-#     pen = turtle.Turtle()
-#     pen.color('red')
-#     for current_x in [-400,-200,0, 200,400]:
-#         pen.penup()
-#         pen.setpos(current_x, y=y)
-#         pen.pendown()
-#         pen.circle(radius=random.randint(50,200))
-#         pen.penup()
-#         pen.forward(100)
-#         pen.pendown()
-#         pen.circle(radius=100)
-
-#
-# airplane(100)
 
 window.onclick(fire_missile)
 our_missiles = []
-our_missiles_target = []#записываем цель
-our_missiles_radius = []
-our_missiles_state = []
-#Делаем бесконечный цикл
+
+# Gaming cicle, and use State pattern
 while True:
     window.update()
 
-    for num, missile in enumerate(our_missiles):
-        if our_missiles_state[num] == 'launched':
+    for info_about_rocket in our_missiles:
+        state = info_about_rocket['state']
+        missile = info_about_rocket['missile']
+        if state == 'launched':
             missile.forward(4)
-            target = our_missiles_target[num]
+            target = info_about_rocket['target']
             if missile.distance(x=target[0], y=target[1]) < 20:
-                our_missiles_state[num] = 'explode'
+                info_about_rocket['state'] = 'explode'
                 missile.shape('circle')
-        elif our_missiles_state[num] == 'explode':
-            our_missiles_radius[num] += 1
-            missile.shapesize(our_missiles_radius[num])
+        elif state == 'explode':
+            info_about_rocket['radius'] += 1
+            #check radius, and change rocket status
+            if info_about_rocket['radius']>5:
+                info_about_rocket['state'] = 'dead'
+                missile.clear()
+                missile.hideturtle()
+            else:
+                missile.shapesize(info_about_rocket['radius'])
+        elif state == 'dead':#if rocket is make BOOM
+            dead_missiles = [info_about_rocket for info_about_rocket in our_missiles if
+                             info_about_rocket['state'] == 'dead']  # Списовая сборка
+            for dead in dead_missiles:
+                our_missiles.remove(dead)
+
 
