@@ -14,10 +14,10 @@ window.screensize(1200, 800)
 # Базовые переменные для расположения и работы с ракетами вражескими и игрока
 BASE_X = 0
 BASE_Y = -300
-ENEMY_BASE_X_MIN = -500
-ENEMY_BASE_X_MAX = 500
-ENEMY_BASE_Y = 500
-
+ENEMY_BASE_X_MIN = -600
+ENEMY_BASE_X_MAX = 600
+ENEMY_BASE_Y = 400
+ENEMY_COUNT = 5 #5 вражеских ракет, для контроля ракет летящих на игрока
 
 def calculate_heading(x1, y1, x2, y2):
     dx = x2 - x1
@@ -41,7 +41,7 @@ def enemy_rocket_missle():
     enemy.penup()
     enemy.setpos(x=x, y=y)
     enemy.pendown()
-    to_ground = calculate_heading(x1=x, y1=ENEMY_BASE_Y, x2=BASE_X, y2=BASE_Y)
+    to_ground = enemy.towards(BASE_X,BASE_Y)#заменяем calculate_heading(x1=x, y1=ENEMY_BASE_Y, x2=BASE_X, y2=BASE_Y) на функцию towards()
     enemy.setheading(to_ground)
     enemy.showturtle()
     enemy_info = {'missile': enemy, 'target': [BASE_X, BASE_Y],
@@ -55,9 +55,9 @@ def fire_missile(x, y):
     missile.hideturtle()
     missile.speed(0)
     missile.penup()
-    missile.setpos(x=BASE_X, y=BASE_Y)
+    missile.setpos(x=BASE_X, y=BASE_Y)#calculate_heading(x1=BASE_X, y1=BASE_Y, x2=x, y2=y) на функцию towards()
     missile.pendown()
-    heading = calculate_heading(x1=BASE_X, y1=BASE_Y, x2=x, y2=y)
+    heading = missile.towards(x,y)
     missile.setheading(heading)
     missile.showturtle()
     info_about_rocket = {'missile': missile, 'target': [x, y],
@@ -93,6 +93,15 @@ while True:
             else:
                 missile.shapesize(info_about_rocket['radius'])
         # elif state == 'dead':  # if rocket is make BOOM
+    #уничтожаем ракеты игрока, чтобы не захламлять список
+    dead_missiles = [info_about_rocket for info_about_rocket in our_missiles if
+                     info_about_rocket['state'] == 'dead']  # Списовая сборка
+    for dead in dead_missiles:
+        our_missiles.remove(dead)
+
+
+    if len(enemy_missiles_rocket) < ENEMY_COUNT:
+        enemy_rocket_missle()
 
     #ракеты вражеская, распаковываем ее данные.
     for info_about_enemy_rocket in enemy_missiles_rocket:
@@ -113,12 +122,12 @@ while True:
                 enemy_rocket.hideturtle()
             else:
                 enemy_rocket.shapesize(info_about_enemy_rocket['radius'])
-
-    #уничтожаем вражеские и  ракеты игрока, чтобы не захломлять список.
-    dead_missiles = [info_about_rocket for info_about_rocket in our_missiles if
-                     info_about_rocket['state'] == 'dead']  # Списовая сборка
+    #уничтожаем ракеты вражеские, чтобы не захламлять список
+    dead_missiles = [info_about_enemy_rocket for info_about_enemy_rocket in enemy_missiles_rocket if
+                     info_about_enemy_rocket['state'] == 'dead']  # Списовая сборка
     for dead in dead_missiles:
-        our_missiles.remove(dead)
+        enemy_missiles_rocket.remove(dead)
+
 
     #В бесконечном цикле делаем вызов функции создания ракеты вражеской, которая рандомно создается и летит к земле.
     if numberTic % random.randint(20, 100) == 0:
