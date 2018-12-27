@@ -9,7 +9,9 @@ window = turtle.Screen()
 window.bgpic(os.path.join(BASE_PATH, 'images', 'background.png'))
 window.setup(1200 + 10, 800 + 10)
 window.screensize(1200, 800)
-# window.tracer(n=2)
+window.tracer(n=2)
+
+
 
 # Базовые переменные для расположения и работы с ракетами вражескими и игрока
 BASE_X = 0
@@ -53,7 +55,7 @@ def create_missile(color, x, y, x2, y2):
 
 
 def fire_missile(x, y):
-    info_about_rocket = create_missile(color='white', x=BASE_X, y=BASE_Y, x2=x, y2=2)
+    info_about_rocket = create_missile(color='white', x=BASE_X, y=BASE_Y, x2=x, y2=y)
     our_missiles.append(info_about_rocket)
 
 def fire_enemy_missile():
@@ -81,6 +83,9 @@ def move_missiles(missiles):
                 missile.hideturtle()
             else:
                 missile.shapesize(info_about_rocket['radius'])
+        elif state == 'dead':
+            missile.clear()
+            missile.hideturtle()
         # elif state == 'dead':  # if rocket is make BOOM
     # уничтожаем ракеты игрока, чтобы не захламлять список
     dead_missiles = [info_about_rocket for info_about_rocket in missiles if
@@ -89,16 +94,30 @@ def move_missiles(missiles):
         missiles.remove(dead)
 
 
-window.onclick(fire_missile)
+
+def check_enemy_count():
+    if len(enemy_missiles_rocket) < ENEMY_COUNT:
+        fire_enemy_missile()
+
+def check_rocket_collision():
+    for our_info in our_missiles:
+        if our_info['state'] != 'explode':
+            continue
+        our_missile = our_info['missile']
+        for enemy_info in enemy_missiles_rocket:
+            enemy_missiles = enemy_info['missile']
+            if enemy_missiles.distance(our_missile.xcor(),our_missile.ycor())< 20:
+                enemy_info['state'] = 'dead'
+
+
 our_missiles = []
 enemy_missiles_rocket = []
-numberTic = 0
+window.onclick(fire_missile)
 
 # Gaming cicle, and use State pattern
 while True:
     window.update()
-    if len(enemy_missiles_rocket) < ENEMY_COUNT:
-        fire_enemy_missile()
-
+    check_enemy_count()
+    check_rocket_collision()
     move_missiles(missiles=our_missiles)
     move_missiles(missiles=enemy_missiles_rocket)
